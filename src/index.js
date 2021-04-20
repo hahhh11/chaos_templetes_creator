@@ -2,40 +2,17 @@
 
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
+import { Switch, Route, Router, BrowserRouter } from "react-router-dom"
 import "./index.css";
 import {
   Layer,
   PanelCtrl,
   TopLayer
 } from "../src/components/Layer/layer.jsx";
-import { CustomSnippetsList } from "./pages/CustomSnippetsList/customSnippetsList";
-if (!window.snippetsJson) {
-  window.snippetsJson = {
-    "custom_xxxxx": {
-      "prefix": "cl",
-      "body": [
-        "console.log(${1})",
-        "//dadfasdf",
-        "//asdfasdf"
-      ],
-      "description": "打印"
-    },
-    "custom_yyyyy": {
-      "prefix": "cl",
-      "body": [
-        "console.log(${1})"
-      ],
-      "description": "打印"
-    },
-    "custom_zzzzz": {
-      "prefix": "cl",
-      "body": [
-        "console.log(${1})"
-      ],
-      "description": "打印"
-    }
-  }
-}
+import { CustomSnippetsList } from "./pages/snippets/customList/customList";
+import PageError from "./pages/pageError/pageError";
+import { PreviewLottie } from "./pages/lotties/preview/preview";
+
 
 // 获取屏幕宽度
 
@@ -60,10 +37,20 @@ export default class App extends Component {
     const { } = this.state;
     return (
       <div className="app" >
-        <CustomSnippetsList snippetsJson={window.snippetsJson} />
+
+        <BrowserRouter>
+          <Switch>
+            <Route path="/" component={PreviewLottie} />
+            <Route path="/snippets/commonList/:page" component={CustomSnippetsList} />
+            <Route path="/snippets/customList/:page" component={CustomSnippetsList} />
+            <Route path="/lottie/preview" component={PreviewLottie} />
+            <PageError Component={PageError} />
+          </Switch>
+        </BrowserRouter>
         {PanelCtrl.ins.render()}
         {TopLayer.ins.render()}
       </div>
+
     );
   }
 }

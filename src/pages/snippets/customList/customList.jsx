@@ -1,23 +1,20 @@
 import { useEffect, useState } from "react";
-import { CodeEditor } from "../../components/CodeEditor/codeEditor";
+import { CodeEditor } from "../../../components/CodeEditor/codeEditor";
 import { Button } from 'antd';
-import '../../styles/common.less';
-import './customSnippetsList.less';
-import piceUrl from "../../images/pice.jpg";
-import addUrl from "../../images/add.png"
-import { AddSnippetItemPanel } from "../../panels/AddSnippetItemPanel/addSnippetItemPanel";
-import { PanelCtrl } from "../../components/Layer/layer";
-import { DeleteWarningPanel } from "../../panels/DeleteWarningPanel/deleteWarningPanel";
+import '../../../styles/common.less';
+import './customList.less';
+import piceUrl from "../../../images/pice.jpg";
+import addUrl from "../../../images/add.png"
+import { AddSnippetItemPanel } from "../../../panels/AddSnippetItemPanel/addSnippetItemPanel";
+import { PanelCtrl } from "../../../components/Layer/layer";
+import { DeleteWarningPanel } from "../../../panels/DeleteWarningPanel/deleteWarningPanel";
 
 export const CustomSnippetsList = (props) => {
-    let { snippetsJson } = props
-    let snippetsKeys = snippetsJson ? Object.keys(snippetsJson) : []
+    // let { snippetsJson } = props
+    let snippetsJson = {}
+    let snippetsKeys = []
     let _customSnippetsKeys = []
-    snippetsKeys.map(snippetKey => {
-        if (snippetKey.split("custom_").length > 1) {
-            _customSnippetsKeys.push({ key: snippetKey, val: snippetsJson[snippetKey] })
-        }
-    })
+
     const [snippetsList, setSnippetList] = useState(snippetsJson)
     const [customSnippetsKeys, setCustomSnippetsKeys] = useState(_customSnippetsKeys)
     const [showEditor, setShowEditor] = useState(false)
@@ -26,11 +23,42 @@ export const CustomSnippetsList = (props) => {
     const [currKey, setCurrKey] = useState(undefined)
 
 
+    let handleEvents
     useEffect(() => {
-        return () => {
+        window.addEventListener('message', handleEvents = (event) => {
+            const message = event.data;
+            if (message.command == undefined || !message.command) {
+                // console.warn('未找到命令名');
+                return;
+            }
+            switch (message.command) {
+                case "getSnippets":
+                    snippetsJson = message.data
+                    snippetsKeys = Object.keys(snippetsJson)
+                    _customSnippetsKeys = []
+                    snippetsKeys.map(snippetKey => {
+                        if (snippetKey.split("custom_").length > 1) {
+                            _customSnippetsKeys.push({ key: snippetKey, val: snippetsJson[snippetKey] })
+                        }
+                    })
+                    setSnippetList(snippetsJson)
+                    setCustomSnippetsKeys(_customSnippetsKeys)
+                    break;
+            }
+        });
+        if (window.nVscode) {
+            window.nVscode.postMessage({
+                command: 'getSnippets',
+                type: 'custom'
+            })
+        }
 
+        return () => {
+            window.removeEventListener('message', handleEvents);
         }
     }, [])
+
+
 
     useEffect(() => {
         // 更新列表
@@ -78,7 +106,7 @@ export const CustomSnippetsList = (props) => {
         setCustomSnippetsKeys(_customSnippetsKeys)
         if (window.nVscode) {
             window.nVscode.postMessage({
-                command: 'deleteSnippets',
+                command: 'deleteSnippet',
                 snippets: JSON.stringify(nList)
             })
         }
@@ -132,19 +160,8 @@ export const CustomSnippetsList = (props) => {
         PanelCtrl.ins.show(AddSnippetItemPanel, { editNewSnippetItem: editNewSnippetItem, keyList: Object.keys(snippetsList) })
     }
 
-    // const saveCode = (key, codeArr) => {
-    //     snippetsJson[key].body = codeArr
-    // }
-    const sureFunc = () => {
-
-    }
-
-    const cancelFunc = () => {
-
-    }
-
-    const showDeleteWarningPanel = (key) => {
-        PanelCtrl.ins.show(DeleteWarningPanel, { deleteFunc: deleteSnippet(key) })
+    const showDeleteWarningPanel = (deleteKey) => {
+        PanelCtrl.ins.show(DeleteWarningPanel, { deleteFunc: deleteSnippet, deleteKey: deleteKey })
     }
 
     const listItems = customSnippetsKeys.map((item, idx) => {

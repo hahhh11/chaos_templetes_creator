@@ -5,7 +5,7 @@ import "./deleteWarningPanel.less";
 
 export const DeleteWarningPanel = (props) => {
 
-    const { close, deleteFunc } = props
+    const { close, deleteFunc, deleteKey } = props
 
     const checkRef = useRef()
 
@@ -21,15 +21,18 @@ export const DeleteWarningPanel = (props) => {
         // 校验是否填写内容
         console.log(checkRef)
         let pass = true
-        let msg = "请先填写片段名"
-
+        let msg = "请输入“确认删除”"
+        console.log(checkRef.current.state)
+        if (!(checkRef?.current?.state?.value) || checkRef.current.state.value !== "确认删除") {
+            pass = false
+        }
         if (!pass) {
             notification.open({
                 message: msg,
             });
             return
         }
-        deleteFunc()
+        deleteFunc(deleteKey)
         close && close()
     }
 
@@ -38,16 +41,16 @@ export const DeleteWarningPanel = (props) => {
     }
 
     return (
-        <div className='addSnippetItemPanel'>
-            <div className="addSnippetItemPanelBg" >
-                <h4>是否确认删除</h4>
+        <div className='deleteSnippetItemPanel'>
+            <div className="deleteSnippetItemPanelBg" >
+                <h4>删除自定义片段</h4>
                 <hr />
                 <div className="content">
-                    <Input className="checkInput" ref={checkRef} size="large" placeholder="输入确认删除" allowClear />
+                    <Input className="checkInput" ref={checkRef} size="large" placeholder="请输入“确认删除”" allowClear />
                 </div>
                 <div className="btns">
-                    <Button className="cancelBtn" danger onClick={() => { onClick_cancelBtn() }}>我手抖了</Button>
-                    <Button type="primary" className="sureBtn" onClick={() => { onClick_sureBtn() }}>确认删除</Button>
+                    <Button type="primary" className="cancelBtn" onClick={() => { onClick_cancelBtn() }}>取消</Button>
+                    <Button type="primary" danger className="sureBtn" onClick={() => { onClick_sureBtn() }}>删除</Button>
                 </div>
             </div>
         </div >
